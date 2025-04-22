@@ -6,6 +6,7 @@ import cors from "cors";
 // Routers
 import authRoutes from "./routes/auth.routes";
 import testResultRoutes from "./routes/testResult.routes";
+import adminRoutes from "./routes/admin.routes";
 import { errorHandler } from "./middlewares/errorHandler";
 
 const app = express();
@@ -17,6 +18,8 @@ app.use(
 );
 app.use("/api", authRoutes);
 app.use("/api", testResultRoutes);
+
+app.use("/api", adminRoutes);
 
 app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
