@@ -11,6 +11,12 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST!,
     dialect: "postgres",
     logging: false,
+    pool: {
+      max: 10, // 10 foydalanuvchi bir vaqtda
+      min: 2, // har doim 2 connection ochiq turadi
+      acquire: 30000, // 30s kutadi agar busy bo‘lsa
+      idle: 10000, // 10s dan keyin yopiladi
+    },
   }
 );
 sequelize
