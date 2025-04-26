@@ -4,6 +4,8 @@ import TestResult from "../models/TestResult";
 import User from "../models/User";
 import { calculateScore } from "../utils/calculateScore";
 import { CustomError } from "../utils/customError";
+import { TestResultAttributes, UserAttributes } from "../types/test";
+import formatSecondsToMinutes from "../utils/formatSecondsToMinutes";
 export const saveTestResult = async (
   req: Request,
   res: Response
@@ -35,6 +37,14 @@ export const saveTestResult = async (
     return res.status(500).json({ message: "Server error" }); // ✅ RETURN QILING
   }
 };
+interface TestResultWithFormatted extends TestResultAttributes {
+  timeFormatted: string;
+}
+
+interface UserWithFormattedResults extends Omit<UserAttributes, "TestResults"> {
+  TestResults: TestResultWithFormatted[];
+}
+
 export const getAllUserResults = async (req: Request, res: Response) => {
   try {
     const users = await User.findAll({
@@ -55,7 +65,22 @@ export const getAllUserResults = async (req: Request, res: Response) => {
       order: [["id", "ASC"]],
     });
 
-    res.status(200).json(users);
+    const formattedUsers: UserWithFormattedResults[] = users.map((user) => {
+      const userData = user.toJSON() as UserAttributes;
+
+      const testResultsFormatted: TestResultWithFormatted[] =
+        userData.TestResults.map((result) => ({
+          ...result,
+          timeFormatted: formatSecondsToMinutes(result.time),
+        }));
+
+      return {
+        ...userData,
+        TestResults: testResultsFormatted,
+      };
+    });
+
+    res.status(200).json(formattedUsers);
   } catch (error) {
     console.error("Get results error:", error);
     res.status(500).json({ message: "Server error" });
